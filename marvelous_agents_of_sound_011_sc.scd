@@ -54,8 +54,6 @@ s.waitForBoot{ fork{
 	}).add;
 
 
-
-
 	// OSCFunc to receive triggers from server and launch sounds
 	~soundlauncher = OSCFunc({
 		arg msg, time;
