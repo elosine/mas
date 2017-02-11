@@ -17,7 +17,12 @@
 ////// nodes 5000-5999; Group 2002; Control Busses 1000-1999
 
 //// Sounds
-////// nodes 10000-19999; Group 2004
+
+////// Toy Piano
+//////// nodes 10000-19999; Group 2004
+
+////// Puff Daddy
+//////// nodes 200000-299999; Group 2004
 
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -27,6 +32,9 @@ s.options.numAudioBusChannels = 500;
 s.options.memSize = 163840;
 s.waitForBoot{ fork{
 	var toypianotrix = 0;
+	var puffdaddyix = 0;
+	var janusix = 0;
+	var stochsynthix = 0;
 	//Make Groups
 	//1999 for monitoring incomming signals
 	//2000-2010 for dsp
@@ -76,15 +84,13 @@ s.waitForBoot{ fork{
 		var trignum = msg[1].asInteger - 4000;
 		var sndnum = msg[2].asInteger;
 		var trigphase = msg[3].asFloat;
-		msg.postln;
-		[trignum, sndnum, trigphase].postln;
+
 		//map trigphase to 0-2 to feed to PanA
 		trigphase = trigphase.linlin(0.0,1.0,0.0,2.0);
 
 		//Switch sounds on sndnum
 		switch(sndnum,
 			0,  {
-
 				var pitch = rrand(39, 90).round;
 				//randomly select mode 0=single pitch, 1=m3, 2=P4, 3=M7, 4=m2
 				var mode = rand(5).round.asInteger;
@@ -122,11 +128,22 @@ s.waitForBoot{ fork{
 
 				); //end switch on mode
 
-			}, //end case 0
+			}, //end case 0 toy piano
 
 			1, {
+				s.sendMsg(\s_new, \puffdaddy, 200000+(trignum*1000)+puffdaddyix, 0, 2004, \t_tr, 1, \pos, trigphase, \obs, 0 );
+				puffdaddyix=puffdaddyix+1;
+			}, //end case 1 puffdaddy
 
-			},
+			2, {
+				s.sendMsg(\s_new, \janus, 300000+(trignum*1000)+janusix, 0, 2004, \t_tr, 1, \pos, trigphase, \obs, 0 );
+				janusix=janusix+1;
+			}, //end case 1 janus
+
+			3, {
+				s.sendMsg(\s_new, \stochsynth, 400000+(trignum*1000)+stochsynthix, 0, 2004, \t_tr, 1, \pos, trigphase, \obs, 0 );
+				janusix=janusix+1;
+			}, //end case 1 janus
 
 		); //end switch on sndnum
 
@@ -155,7 +172,7 @@ s.waitForBoot{ fork{
 		var clktime = msg[4].asFloat;
 		var phase = clktime.linlin(0.0, 60.0, 0.0, 1.0);
 		var soundcolor = [ "limegreen", "purple", "goldenrod", "dodgerblue" ];
-		msg.postln;
+
 
 		fork{
 			// 1) Create a phasectl for trigger's phase
@@ -222,18 +239,16 @@ s.waitForBoot{ fork{
 	////SOUNDS SYNTH DEFS
 	SynthDef( \puffdaddy, {
 		//add a freq arg
-		arg tribs, obs=0,ivc = #[3,10,14,23,28,31,32], il1=0.27,d1=0.17, il2=0.2,d2=0.14, il3=0.3,d3=0.22, il4=0.12,d4=0.11, il5=0.24,d5=0.25, il6=0.14,d6=0.19, il7=0.3,d7=0.22, pos=0, wd=2, rq=0.08, amp=4, rt=0.1, dp=0.5;
-		var iv1 = [3,10,14,23,28,31,32], iv2= [1,4,5,6,7,10,11], iv3= [1,6,11,17,19, 24,30], iv4= [4,6,8,10,11,14,17];
-		var p1,p2,p3,p4,p5,p6,p7, ivs, iv, pd1,pd2,pd3,pd4,pd5,pd6,pd7, c1,c1d, c2,c2d, c3,c3d, c4,c4d, c5,c5d, c6,c6d, c7,c7d, sig;
+		arg obs=0, t_tr=0, ivc = #[3,10,14,23,28,31,32], il1=1.27,d1=0.17, il2=1.2,d2=0.14, il3=1.3,d3=0.22, il4=1.12,d4=0.11, il5=1.24,d5=0.25, il6=1.14,d6=0.19, il7=1.3,d7=0.22, pos=0, wd=2, rq=0.08, rq2=0.5, amp=0.87, rt=0.1, dp=0.5;
+		var iv1 = [3,10,2,11,4,7,8], iv2= [1,4,5,6,7,10,11], iv3= [1,6,11,5,7, 12,18], iv4= [4,6,8,10,11,2,5];
+		var imp, p1,p2,p3,p4,p5,p6,p7, ivs, iv, pd1,pd2,pd3,pd4,pd5,pd6,pd7, c1,c1d, c2,c2d, c3,c3d, c4,c4d, c5,c5d, c6,c6d, c7,c7d, sig;
 		var st2,st3,st4,st5,st6,st7;
 		var lfo1;
 		var hp;
 		var pd1b;
-		var imp = In.ar(tribs);
-		var env = EnvGen.ar(Env.perc(0.01, 0.05, curve:0), imp);
-		Out.ar(0, SinOsc.ar(600)*env);
-		//imp = T2A.ar(tr);
-		p1 = TIRand.kr(43, 79, imp).poll;
+		var env = EnvGen.ar(Env.perc(0.01,2.0),t_tr, doneAction:2);
+		imp = T2A.ar(t_tr);
+		p1 = TIRand.kr(43, 79, imp);
 		ivs = [iv1, iv2, iv3, iv4];
 		iv = TChoose.kr(imp, ivs);
 		p2 = p1+iv[0];
@@ -258,15 +273,15 @@ s.waitForBoot{ fork{
 		c2d = CombC.ar(c2, 0.2, TRand.kr(0.1, 0.33, imp), SinOsc.kr( 0.06 ).range(0.8, 2.9));
 		c3 = CombC.ar(imp, 0.2, pd3, il3);
 		st3 = TRand.kr(0.7, 0.1);
-		c3 = DelayC.ar(c3, 0.2, st2+st3);
+		//c3 = DelayC.ar(c3, 0.2, st3);
 		c3d = CombC.ar(c3, 0.2, TRand.kr(0.09, 0.1, imp), SinOsc.kr( 0.09 ).range(1.5, 1.8));
 		c4 = CombC.ar(imp, 0.2, pd4, il4);
 		st4 = TRand.kr(0.7, 0.1);
-		c4 = DelayC.ar(c4, 0.4, st2+st3+st4);
+		c4 = DelayC.ar(c4, 0.4, st4);
 		c4d = CombC.ar(c4, 0.2, TRand.kr(0.11, 0.5, imp), SinOsc.kr( 0.05 ).range(1.6, 2.1));
 		c5 = CombC.ar(imp, 0.2, pd5, il5);
 		st5 = TRand.kr(0.7, 0.1);
-		c5 = DelayC.ar(c5, 0.4, st2+st3+st4+st5);
+		c5 = DelayC.ar(c5, 0.4, st5);
 		c5d = CombC.ar(c5, 0.2, TRand.kr(0.08, 0.12, imp), SinOsc.kr( 0.02 ).range(0.7, 3.1));
 		c6 = CombC.ar(imp, 0.2, pd6, il6);
 		st6 = TRand.kr(0.7, 0.1);
@@ -274,21 +289,23 @@ s.waitForBoot{ fork{
 		c6d = CombC.ar(c6, 0.2, TRand.kr(0.098, 0.2, imp), SinOsc.kr( 0.07 ).range(1.1, 1.8));
 		c7 = CombC.ar(imp, 0.2, pd7, il7);
 		st7 = TRand.kr(0.7, 0.1);
-		c7 = DelayC.ar(c7, 0.6, st2+st3+st4+st5+st7);
+		//c7 = DelayC.ar(c7, 0.6, st7);
 		c7d = CombC.ar(c7, 0.2, TRand.kr(0.12, 0.3, imp), SinOsc.kr( 0.03 ).range(0.75, 2.5));
-		sig = Mix.ar([ c1*(1.0/3.0), c1d*(1.0/3.0),  c2*(1.0/3.0),c2d*(1.0/3.0), c3*(1.0/3.0),c3d*(1.0/3.0), c4*(1.0/4.0),c4d*(1.0/3.0), c5*(1.0/3.0),c5d*(1.0/3.0), c6*(1.0/3.0),c6d*(1.0/3.0), c7*(1.0/3.0),c7d*(1.0/3.0) ]);
+		sig = Mix.ar([c1, c1d, c2, c2d, c3, c3d, c4, c4d, c5, c5d, c6, c6d, c7, c7d]*0.75);
 
 		hp = RHPF.ar(sig, SinOsc.kr(0.03).range(3000, 12000), rq);
 		hp = JPverb.ar(hp, rt, dp);
+		hp = Mix.ar(hp);
 
-		sig = RLPF.ar(sig, SinOsc.kr(0.03).range(1200, 12000), rq);
-		sig = Mix.ar([sig, hp*0.33]);
+		sig = RLPF.ar(sig, SinOsc.kr(0.03).range(800, 12000), rq2);
+		sig = Mix.ar([sig, hp*0.03]);
 
 		//sig = PanAz.ar(8, Mix.ar([sig, hp*0.33]), pos, 1, wd, 0.5);
 		//sig = PanAz.ar(8, sig, pos, 1, wd, 0.5);
 		//sig = PanAz.ar(8, sig, SinOsc.kr(0.03), 1, wd, 0.5);
 		//sig = PanAz.ar(8, Mix.ar([sig, JPverb.ar(hp, rt, dp)*0.33]), SinOsc.kr(0.03), 1, wd, 0.5);
-		Out.ar(obs, sig*amp);
+		//sig = Mix.ar([sig, hp*0.02]);
+		Out.ar(obs, sig*amp*env);
 	}).add;
 
 	//Toy Piano
@@ -342,10 +359,108 @@ s.waitForBoot{ fork{
 		Out.ar(obs, sig*amp*env);
 	}).add;
 
+	SynthDef( \janus, {
+		arg obs=0, t_tr=0, amp=0.5;
+		var imp = T2A.ar(t_tr);
+		var o1 = SinOsc.kr(0.311).range(0.0, 0.25);
+		var o2 = SinOsc.kr(0.07).range(0.0, 0.25);
+		var o3 = SinOsc.kr(0.11).range(0.0, 0.25);
+		var o4 = SinOsc.kr(0.085).range(0.0, 0.25);
+		var o5 = SinOsc.kr(0.23).range(0.0, 0.25);
+		var dur = TRand.kr(3.0, 9.0,imp);
+		var p1 = TIRand.kr(40, 80, imp);
+		var p2 = p1 + TIRand.kr(1, 10, imp);
+		var p3 = p1 + TIRand.kr(1, 10, imp);
+		var f1 = p1.midicps;
+		var f2 = p2.midicps;
+		var f3 = p3.midicps;
+		var h = [2,3,4,5,6,7,8,9,10,11,12,13,14];
+		var j1 = TIRand.kr(0,10,imp);
+		var j2 = TIRand.kr(0,10,imp);
+		var j3 = TIRand.kr(0,10,imp);
+		var h1 = h.scramble.copyRange(3,5).addFirst(1);
+		var h2 = h.scramble.copyRange(7,9).addFirst(1);
+		var h3 = h.scramble.copyRange(0,2).addFirst(1);
+		var s1 = Ringz.ar( imp, f1*h1, dur,[o5, o1, o2, o3] );
+		var s2 = Ringz.ar( imp, f2*h2, dur,[o3, o5, o4, o2]);
+		var s3 = Ringz.ar( imp, f3*h3, dur,[o2, o1, o5, o3]);
+		var fe = EnvGen.ar(Env.perc(0.002, dur+(dur*0.7), 1, 0),imp,doneAction:2);
+		var f1b = (p1+1).midicps;
+		var s1b = Ringz.ar( imp, f1b, dur,[o5, o1, o2, o3]);
+		var f2b = (p2+1).midicps;
+		var s2b = Ringz.ar( imp, f2b, dur,[o3, o5, o4, o2]);
+		var f3b = (p3+1).midicps;
+		var s3b = Ringz.ar( imp, f3b, dur,[o2, o1, o5, o3]);
+		s1 = Mix.ar(s1);
+		s2 = Mix.ar(s2);
+		s3 = Mix.ar(s3);
+		//Out.ar(och, Mix.ar([s1*(1.0/6.0), s2*(1.0/6.0), s3*(1.0/6.0), s1b*(1.0/6.0), s2b*(1.0/6.0), s3b*(1.0/6.0)])*fe);
+		Out.ar(obs, (Mix.ar([s1*0.3, s2*0.3, s3*0.3])*fe) * amp);
+		//Out.ar(0, Mix.ar([s1*(1.0/6.0), s1b*(1.0/6.0)])*fe);
+	}).add;
+
+	SynthDef(\stochsynth, {
+		arg obs=0,ampdist = 4.5, durdist = 1.5, adparam = 1, ddparam = 1, minfreq = 50, maxfreq = 6580, ampscale = 1.0, durscale = 0.5, initCPs = 12, knum, mul = 0.5, add = 0, envdur = 2, envdens = 7, atk=0.001, amp = 4.1, rel = 0.5;
+		//'one-slider' variables
+		//var dur = \dur.kr(0.0).linexp(0.0, 1.0, 0.02, 3.02);
+		//var dens = \dens.kr(0.0).linlin(0.0, 1.0, 37.0, 9.02);
+		//var crv = \crv.kr(0.0).linexp(0.0, 1.0, 6.0, 4.0);
+		//var res = \res.kr(0.0).linlin(0.0, 1.0, 0.0, 0.6);
+		//'one-slider' variables
+		var lfo = LFTri.kr(0.1).range(0.0, 1.0);
+		var dur = lfo.linexp(0.0, 1.0, 0.02, 3.02);
+		var dens = lfo.linlin(0.0, 1.0, 37.0, 9.02);
+		var crv = lfo.linexp(0.0, 1.0, 6.0, 4.0);
+		var res = lfo.linlin(0.0, 1.0, 0.0, 0.6);
+
+		var env = Env.perc(0.0001, dur, 0.25, -32);
+		var gate = Dust.kr(dens);
+		var env_gen = EnvGen.kr(env, gate, doneAction: 0);
+		var envgate = Dust.kr(envdens);
+		//var ampenv = EnvGen.kr(Env.perc(0.001, envdur, curve: crv), envgate);
+		//var ampenv = EnvGen.kr(Env.perc(atk, TRand.kr(0.08, 1.2, Dust.kr(1)), curve: crv), envgate);
+		var ampenv = EnvGen.kr(Env.perc(atk, rel, curve: crv), \t_tr.kr(0, 0.0), doneAction:2);
+		var gd = Gendy1.ar( ampdist, durdist, adparam, ddparam, minfreq, maxfreq, ampscale, durscale, initCPs, knum, env_gen, add );
+		var moog = MoogLadder.ar(gd, TIRand.kr(200, 10000, envgate),res);
+		var ring = Ringz.ar(gd, TRand.kr(80, 1500, Dust.kr(1.4)), TRand.kr(0.2, 3, Dust.kr(1.4)));
+		var mix = Mix.ar([gd, ring*0.01]);
+		var rmod = SinOsc.ar(SinOsc.kr(0.03, 0, 400, 600));
+		var pan = Pan2.ar([moog, DelayC.ar(moog, delaytime:0.008)], SinOsc.kr(TIRand.kr(0.5, 2.5,Dust.kr(1.0) )));//spatialize
+		Out.ar(obs, moog*ampenv*amp);
+	}).add;
+
+
+	SynthDef(\drumline, {
+		arg rate1=11.0, rate2=10.0, rate3=12.0, gdur=0.03, ffreq=5000, frez=0.5, fr1=300, fr2=12000, amp=1.5, gate=0, dur=0.01, crv=0, pan=0;
+		var noise, grainrate1, grainrate2, grainrate3, grainenv1, grainenv2, grainenv3, filterednoise1, filterednoise2, filterednoise3, freqchgrate1, freqchgrate2, freqchgrate3, s1, s2, s3, output, oenv, envtrig, atk;
+		atk = PinkNoise.ar()*EnvGen.ar(Env.perc(attackTime:0.005, releaseTime:0.01));
+		envtrig = \t_tr.kr(0,0);
+		oenv = EnvGen.ar( Env.perc(attackTime:0.005, releaseTime:dur, curve:crv), envtrig, doneAction:0);
+		grainrate1 = Impulse.kr(rate1);
+		grainrate2 = Impulse.kr(rate2);
+		grainrate3 = Impulse.kr(rate3);
+		freqchgrate1 = Impulse.kr(rate1*2);
+		freqchgrate2 = Impulse.kr(rate2*3);
+		freqchgrate3 = Impulse.kr(rate3*4);
+		grainenv1 = EnvGen.ar( Env.perc(attackTime:0.003, releaseTime:gdur), gate:grainrate1 );
+		grainenv2 = EnvGen.ar( Env.perc(attackTime:0.003, releaseTime:gdur), gate:grainrate2 );
+		grainenv3 = EnvGen.ar( Env.perc(attackTime:0.003, releaseTime:gdur), gate:grainrate3 );
+		noise = Crackle.ar(chaosParam:1.95);
+		filterednoise1 = MoogLadder.ar( in:noise, ffreq:TRand.kr(fr1, fr2, freqchgrate1), res:frez, mul:3 );
+		filterednoise2 = MoogLadder.ar( in:noise, ffreq:TRand.kr(fr1, fr2, freqchgrate2), res:frez, mul:3 );
+		filterednoise3 = MoogLadder.ar( in:noise, ffreq:TRand.kr(fr1, fr2, freqchgrate3), res:frez, mul:3 );
+		s1 = filterednoise1*grainenv1;
+		s2 = filterednoise2*grainenv2;
+		s3 = filterednoise3*grainenv3;
+		output = Mix.ar( [s1, s2, s3, atk] );
+		//output = Pan2.ar(output, pan);
+		Out.ar(0, output*amp*oenv);
+	}).add;
+
 	0.1.wait;
 
 	////Initial Clock at 60bpm, with one clock having 16 beats
-s.sendMsg(\s_new, \phasorclock, 3000, 0, 2001, \abus, 100, \kbus, 0, \bpc, 16, \stbpm, 60, \endbpm, 60, \dur, 0.01, \t_tr, 1);
+	s.sendMsg(\s_new, \phasorclock, 3000, 0, 2001, \abus, 100, \kbus, 0, \bpc, 16, \stbpm, 60, \endbpm, 60, \dur, 0.01, \t_tr, 1);
 
 }}//end fork and s.waitForBoot
 )
@@ -379,6 +494,37 @@ b.sendMsg("/mktr", 12, 0, 0, 2.5);
 b.sendMsg("/mktr", 13, 0, 0, 2.9);
 b.sendMsg("/mktr", 14, 0, 0, 3.3);
 b.sendMsg("/mktr", 15, 0, 0, 3.8);
+
+
+b.sendMsg("/mktr", 16, 0, 1, 32.0);
+b.sendMsg("/mktr", 17, 0, 1, 32.7);
+b.sendMsg("/mktr", 18, 0, 1, 34.6);
+b.sendMsg("/mktr", 19, 0, 1, 36.2);
+b.sendMsg("/mktr", 20, 0, 1, 37.0);
+b.sendMsg("/mktr", 21, 0, 1, 58.0);
+b.sendMsg("/mktr", 22, 0, 1, 3.3);
+b.sendMsg("/mktr", 23, 0, 1, 14.0);
+b.sendMsg("/mktr", 24, 0, 1, 32.0);
+b.sendMsg("/mktr", 25, 0, 1, 46.5);
+
+
+b.sendMsg("/mktr", 26, 0, 2, 57.3);
+b.sendMsg("/mktr", 27, 0, 2, 12.0);
+b.sendMsg("/mktr", 28, 0, 2, 13.0);
+b.sendMsg("/mktr", 29, 0, 2, 13.5);
+b.sendMsg("/mktr", 30, 0, 2, 32.23);
+
+
+b.sendMsg("/mktr", 31, 0, 3, 41);
+b.sendMsg("/mktr", 32, 0, 3, 41.3);
+b.sendMsg("/mktr", 33, 0, 3, 41.7);
+b.sendMsg("/mktr", 34, 0, 3, 42.1);
+b.sendMsg("/mktr", 35, 0, 3, 50.0);
+b.sendMsg("/mktr", 36, 0, 3, 51.2);
+b.sendMsg("/mktr", 37, 0, 3, 51.4);
+b.sendMsg("/mktr", 38, 0, 3, 13.0);
+b.sendMsg("/mktr", 39, 0, 3, 22.0);
 )
 
 s.queryAllNodes
+s.meter;
