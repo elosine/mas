@@ -198,7 +198,7 @@ s.waitForBoot{ fork{
 		var sndix = msg[3].asInteger; //which sound, probably by color
 		var clktime = msg[4].asFloat;
 		var phase = clktime.linlin(0.0, 60.0, 0.0, 1.0);
-		var soundcolor = [ "limegreen", "purple", "goldenrod", "dodgerblue" ];
+		var soundcolor = [ "limegreen", "purple", "goldenrod", "dodgerblue", "seagreen" ];
 
 
 		fork{
@@ -218,7 +218,7 @@ s.waitForBoot{ fork{
 
 			// 3) Send Msg to Processing to create graphical representation
 			//// "/mktrigger", ix, radius (from trk), size, string soundcolor
-			~proc.sendMsg( "/mktrigger", ix, 0.5, clktime, soundcolor[sndix] );
+			~proc.sendMsg( "/mktrigger", ix, 0.667, clktime, soundcolor[sndix] );
 
 		}//end fork
 
@@ -252,7 +252,7 @@ s.waitForBoot{ fork{
 	OSCdef( \gettgkdata, {
 		arg msg;
 		var kbus = msg[1].asInteger;
-		s.sendMsg(\c_get, kbus);
+		s.sendMsg(\c_get, kbus+1000);
 	}, "/gettgkdata");
 	//// This one responds to server request, and sends control bus data to processing
 	//// Trigger phase control busses are 1000-1999
@@ -260,7 +260,7 @@ s.waitForBoot{ fork{
 		arg msg;
 		var bnum=msg[1].asInteger;
 		var val=msg[2].asFloat;
-		if(bnum>=100,{~proc.sendMsg("/tgkdat", bnum-1000, val)});
+		if(bnum>=1000,{~proc.sendMsg("/tgkdat", bnum-1000, val)});
 	}, \c_set);
 
 	////SOUNDS SYNTH DEFS
@@ -565,7 +565,7 @@ b.sendMsg("/mktr", 14, 0, 0, 3.3);
 b.sendMsg("/mktr", 15, 0, 0, 3.8);
 
 
-b.sendMsg("/mktr", 16, 0, 1, 32.0);
+b.sendMsg("/mktr", 1, 0, 1, 32.0);
 b.sendMsg("/mktr", 17, 0, 1, 32.7);
 b.sendMsg("/mktr", 18, 0, 1, 34.6);
 b.sendMsg("/mktr", 19, 0, 1, 36.2);
@@ -579,7 +579,7 @@ b.sendMsg("/mktr", 25, 0, 1, 46.5);
 
 b.sendMsg("/mktr", 26, 0, 2, 57.3);
 b.sendMsg("/mktr", 27, 0, 2, 12.0);
-b.sendMsg("/mktr", 28, 0, 2, 13.0);
+b.sendMsg("/mktr", 2, 0, 2, 13.0);
 b.sendMsg("/mktr", 29, 0, 2, 13.5);
 b.sendMsg("/mktr", 30, 0, 2, 32.23);
 
@@ -591,17 +591,30 @@ b.sendMsg("/mktr", 34, 0, 3, 42.1);
 b.sendMsg("/mktr", 35, 0, 3, 50.0);
 b.sendMsg("/mktr", 36, 0, 3, 51.2);
 b.sendMsg("/mktr", 37, 0, 3, 51.4);
-b.sendMsg("/mktr", 38, 0, 3, 13.0);
+b.sendMsg("/mktr", 3, 0, 3, 13.0);
 b.sendMsg("/mktr", 39, 0, 3, 22.0);
 
 
 
 b.sendMsg("/mktr", 40, 0, 4, 1.1);
-b.sendMsg("/mktr", 41, 0, 4, 11.1);
+b.sendMsg("/mktr", 4, 0, 4, 11.1);
 b.sendMsg("/mktr", 42, 0, 4, 30.0);
 b.sendMsg("/mktr", 43, 0, 4, 46.1);
 b.sendMsg("/mktr", 44, 0, 4, 59.0);
 )
 
+//move targets
+s.sendMsg(\n_set, 5000, \lo, 1.0, \hi, 0.667, \dur, 13);
+s.sendMsg(\n_set, 5001, \lo, 1.0, \hi, 0.0, \dur, 7);
+s.sendMsg(\n_set, 5002, \lo, 0.0, \hi, 1.0, \dur, 18);
+s.sendMsg(\n_set, 5003, \lo, 0.0, \hi, 0.7, \dur, 21);
+s.sendMsg(\n_set, 5004, \lo, 0.4, \hi, 0.9, \dur, 5);
+
+
 s.queryAllNodes
 s.meter;
+
+//multiple wands
+//effects/tracks
+//control gui
+//numbers
