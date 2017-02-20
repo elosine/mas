@@ -64,7 +64,7 @@ void draw() {
   background(0);
   bullseyeCAz.drw();
   timetrigz.drw();
-  dialz.drw(); 
   beatgridz.drw();
   triggerz.drw();
+  dialz.drw(); 
 }
