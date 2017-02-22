@@ -61,6 +61,9 @@ OSCdef( \timerkdat, {
 
 
 e = Synth(\greyhole, [\ibs, 0, \gateibs, 813]);
+f = Synth(\greyhole, [\ibs, 0, \gateibs, 813]);
+g = Synth(\greyhole, [\ibs, 0, \gateibs, 813]);
+h = Synth(\greyhole, [\ibs, 0, \gateibs, 813]);
 e.free;
 s.meter
 //

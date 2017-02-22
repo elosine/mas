@@ -40,10 +40,10 @@ void setup() {
   osc.plug(triggerz, "tgkdat", "/tgkdat");
 
   bullseyeCAz.mk( 0, 15.0, 15.0);
-  dialz.mk(0, 0, 0.0, 1.0, "yellow", 2);
-  dialz.mk(1, 0, 0.0, 1.0, "seagreen", 2);
-  dialz.mk(2, 0, 0.0, 1.0, "purple", 2);
-  dialz.mk(3, 0, 0.0, 1.0, "pink", 2);
+ // dialz.mk(0, 0, 0.0, 1.0, "yellow", 2);
+ // dialz.mk(1, 0, 0.0, 1.0, "seagreen", 2);
+ // dialz.mk(2, 0, 0.0, 1.0, "purple", 2);
+ // dialz.mk(3, 0, 0.0, 1.0, "pink", 2);
   /*
   beatgridz.mk(0, 0, 0, 16, 1, 3, "limegreen");
    beatgridz.mk(1, 0, 1, 16, 2, 7, "limegreen");
