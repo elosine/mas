@@ -386,16 +386,16 @@ s.waitForBoot{ fork{
 		var clk = In.ar(clkibs);
 		//trigphase comes from one of the wand's clocks
 		var trigphasebus = Array.fill(10, {|ix| trigphasebus0+ix});
-		var trigphase0 = In.kr(trigphasebus[0]).poll;
-		var trigphase1 = In.kr(trigphasebus[1]);
-		var trigphase2 = In.kr(trigphasebus[2]);
-		var trigphase3 = In.kr(trigphasebus[3]);
-		var trigphase4 = In.kr(trigphasebus[4]);
-		var trigphase5 = In.kr(trigphasebus[5]);
-		var trigphase6 = In.kr(trigphasebus[6]);
-		var trigphase7 = In.kr(trigphasebus[7]);
-		var trigphase8 = In.kr(trigphasebus[8]);
-		var trigphase9 = In.kr(trigphasebus[9]);
+		var trigphase0 = In.ar(trigphasebus[0]);
+		var trigphase1 = In.ar(trigphasebus[1]);
+		var trigphase2 = In.ar(trigphasebus[2]);
+		var trigphase3 = In.ar(trigphasebus[3]);
+		var trigphase4 = In.ar(trigphasebus[4]);
+		var trigphase5 = In.ar(trigphasebus[5]);
+		var trigphase6 = In.ar(trigphasebus[6]);
+		var trigphase7 = In.ar(trigphasebus[7]);
+		var trigphase8 = In.ar(trigphasebus[8]);
+		var trigphase9 = In.ar(trigphasebus[9]);
 		// Signal-Rate if control statement, creates a trigger at set phase
 		var tr0 = (clk<trigphase0) * ( (clk+durphase)>trigphase0 );
 		var tr1 = (clk<trigphase1) * ( (clk+durphase)>trigphase1 );
@@ -499,7 +499,7 @@ s.waitForBoot{ fork{
 		////////  nodes 3200-
 		////////  group 2005
 		//////// control busses 3000-
-		s.sendMsg(\s_new, \triggeredtimer, 3200+ix, 0, 2005, \clkibs, 110+ix, \trigphasebus0, 1000, \obs0, 3000, \durphase, durphase);
+		s.sendMsg(\s_new, \triggeredtimer, 3200+ix, 0, 2005, \clkibs, 110+ix, \trigphasebus0, 100, \obs0, 3000, \durphase, durphase);
 
 		////// 3) Create an fx
 		//////// nodes 3300-
@@ -886,9 +886,9 @@ s.waitForBoot{ fork{
 ////// 3: sound number
 ////// 4: phase in clocktime minutes
 
-~sclang.sendMsg("/mkwand", 1, 108.0);
-~sclang.sendMsg("/mkwand", 2, 128.0);
-~sclang.sendMsg("/mkwand", 3, 138.0);
+~sclang.sendMsg("/mkwand", 1, 128.0);
+~sclang.sendMsg("/mkwand", 2, 158.0);
+~sclang.sendMsg("/mkwand", 3, 48.0);
 ~sclang.sendMsg("/mkwand", 4, 99);
 ~sclang.sendMsg("/mkwand", 5, 177);
 
@@ -904,10 +904,10 @@ var fxnum = msg[4].asInteger;
 ~sclang.sendMsg("/mkfx", 0, 100.0, 0.5, 0);
 
 ~sclang.sendMsg("/mktr", 0, 0, 0, 24.0);
-b.sendMsg("/mktr", 1, 0, 1, 32.0);
-b.sendMsg("/mktr", 2, 0, 2, 13.0);
-b.sendMsg("/mktr", 3, 0, 3, 43.0);
-b.sendMsg("/mktr", 4, 0, 4, 11.1);
+~sclang.sendMsg("/mktr", 1, 0, 1, 52.0);
+~sclang.sendMsg("/mktr", 2, 0, 2, 13.0);
+~sclang.sendMsg("/mktr", 3, 0, 3, 39.0);
+~sclang.sendMsg("/mktr", 4, 0, 4, 4.1);
 
 
 
