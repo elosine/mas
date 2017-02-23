@@ -420,12 +420,79 @@ s.waitForBoot{ fork{
 		Out.kr(obs[9], tr9);
 	}).add;
 
+	//These are for Processing to retreive phase data of individual targets
+	//This one is polled by processing and requests control bus data from server
+	OSCdef( \getTimerDat, {
+		arg msg;
+		var kbus = msg[1].asInteger;
+		s.sendMsg(\c_get, kbus+10);
+	}, "/getTimerDat");
+
+	//// This one responds to server request, and sends control bus data to processing
+	//// Trigger phase control busses are 1000-1999
+	OSCdef( \timerkdat, {
+		arg msg;
+		var bnum=msg[1].asInteger;
+		var val=msg[2].asFloat;
+		if(bnum>=10,{~proc.sendMsg("/timerkdat", bnum-10, val)});
+	}, \c_set);
+
+
+	0.1.wait;
+
+	//// OSCdef to create a new fx triggered timer
+	OSCdef(\mkfx, {
+		arg msg;
+		var ix = msg[1].asInteger;
+		var bpm = msg[2].asFloat;
+		var durphase = msg[3].asFloat;
+		var fxnum = msg[4].asInteger;
+		var fxclrs = ["goldenrod", "dodgerblue", "mint"];
+
+		////// 1) Make a new phasorclock
+		////////// fx clocks will be nodes 3010-
+		///////////  control busses 10-
+		///////////  audio busses 110-
+		///////////  group 2001
+
+		s.sendMsg(\s_new, \phasorclock, 3010+ix, 0, 2001, \abus, 110+ix, \kbus, 10+ix, \bpc, 16, \stbpm, bpm, \endbpm, bpm, \rampdur, 0.01, \t_tr, 1);
+
+		//////  2) Make a triggered timer
+		////////  nodes 3200-
+		////////  group 2005
+		//////// control busses 3000-
+		s.sendMsg(\s_new, \triggeredtimer, 3200+ix, 0, 2005, \clkibs, 110+ix, \trigphasebus0, 100, \obs0, 3000, \durphase, durphase);
+
+		////// 3) Create an fx
+		//////// nodes 3300-
+		//////// group 2006
+
+		switch( fxnum,
+
+			0, { //greyhole
+				s.sendMsg(\s_new, \greyhole, 3300+ix, 0, 2006, \ibs0, 200, \gateibs0, 3000);
+			},
+
+			1, { //decimate
+				s.sendMsg(\s_new, \decimate, 3300+ix, 0, 2006, \ibs0, 200, \gateibs0, 3000);
+			}
+		); //end switch fxnum
+
+		////// 4) Create Animated Graphic in Processing
+		// int ix, float rad, float dur, String sclr, int wt
+
+		~proc.sendMsg( "/mktimetrig", ix, 0.5, durphase, fxclrs[fxnum], 15);
+
+
+	}, "/mkfx");
+
 
 	SynthDef(\greyhole, {
 		arg ibs0, obs=0, gateibs0;
 
 		var ibs = Array.fill(10, {|ix| ibs0+ix});
 		var gateibs = Array.fill(10, {|ix| gateibs0+ix});
+
 
 		var in0 = In.ar(ibs[0]);
 		var in1 = In.ar(ibs[1]);
@@ -459,65 +526,76 @@ s.waitForBoot{ fork{
 
 	}).add;
 
-	//These are for Processing to retreive phase data of individual targets
-	//This one is polled by processing and requests control bus data from server
-	OSCdef( \getTimerDat, {
-		arg msg;
-		var kbus = msg[1].asInteger;
-		s.sendMsg(\c_get, kbus+10);
-	}, "/getTimerDat");
+	SynthDef(\decimate, {
+		arg ibs0, obs=0, gateibs0;
+		var amp = \amp.kr(0.85, 0.01);
+		var rate = LFTri.kr(0.005).range(1000.0, 10000.0);
+		var bits = LFTri.kr(0.003).range(1.0, 6.0);
 
-	//// This one responds to server request, and sends control bus data to processing
-	//// Trigger phase control busses are 1000-1999
-	OSCdef( \timerkdat, {
-		arg msg;
-		var bnum=msg[1].asInteger;
-		var val=msg[2].asFloat;
-		if(bnum>=10,{~proc.sendMsg("/timerkdat", bnum-10, val)});
-	}, \c_set);
+		var ibs = Array.fill(10, {|ix| ibs0+ix});
+		var gateibs = Array.fill(10, {|ix| gateibs0+ix});
 
+		//audio in busses
+		var in0 = In.ar(ibs[0]);
+		var in1 = In.ar(ibs[1]);
+		var in2 = In.ar(ibs[2]);
+		var in3 = In.ar(ibs[3]);
+		var in4 = In.ar(ibs[4]);
+		var in5 = In.ar(ibs[5]);
+		var in6 = In.ar(ibs[6]);
+		var in7 = In.ar(ibs[7]);
+		var in8 = In.ar(ibs[8]);
+		var in9 = In.ar(ibs[9]);
 
-	0.1.wait;
+		//gate signals from individual targets/wands
+		var gate0 = In.kr(gateibs[0]).poll;
+		var gate1 = In.kr(gateibs[1]);
+		var gate2 = In.kr(gateibs[2]);
+		var gate3 = In.kr(gateibs[3]);
+		var gate4 = In.kr(gateibs[4]);
+		var gate5 = In.kr(gateibs[5]);
+		var gate6 = In.kr(gateibs[6]);
+		var gate7 = In.kr(gateibs[7]);
+		var gate8 = In.kr(gateibs[8]);
+		var gate9 = In.kr(gateibs[9]);
 
-	//// OSCdef to create a new fx triggered timer
-	OSCdef(\mkfx, {
-		arg msg;
-		var ix = msg[1].asInteger;
-		var bpm = msg[2].asFloat;
-		var durphase = msg[3].asFloat;
-		var fxnum = msg[4].asInteger;
+		//envelopes per sig/wand
+		var env0 = EnvGen.ar(Env.asr(1.25,1,1.25,0),gate0);
+		var env1 = EnvGen.ar(Env.asr(1.25,1,1.25,0),gate1);
+		var env2 = EnvGen.ar(Env.asr(1.25,1,1.25,0),gate2);
+		var env3 = EnvGen.ar(Env.asr(1.25,1,1.25,0),gate3);
+		var env4 = EnvGen.ar(Env.asr(1.25,1,1.25,0),gate4);
+		var env5 = EnvGen.ar(Env.asr(1.25,1,1.25,0),gate5);
+		var env6 = EnvGen.ar(Env.asr(1.25,1,1.25,0),gate6);
+		var env7 = EnvGen.ar(Env.asr(1.25,1,1.25,0),gate7);
+		var env8 = EnvGen.ar(Env.asr(1.25,1,1.25,0),gate8);
+		var env9 = EnvGen.ar(Env.asr(1.25,1,1.25,0),gate9);
 
-		////// 1) Make a new phasorclock
-		////////// fx clocks will be nodes 3010-
-		///////////  control busses 10-
-		///////////  audio busses 110-
-		///////////  group 2001
+		var sig0, sig1, sig2, sig3, sig4, sig5, sig6, sig7, sig8, sig9;
 
-		s.sendMsg(\s_new, \phasorclock, 3010+ix, 0, 2001, \abus, 110+ix, \kbus, 10+ix, \bpc, 16, \stbpm, bpm, \endbpm, bpm, \rampdur, 0.01, \t_tr, 1);
+		//fx per wand
+		sig0 = Decimator.ar(in0, rate, bits);
+		sig1 = Decimator.ar(in1, rate, bits);
+		sig2 = Decimator.ar(in2, rate, bits);
+		sig3 = Decimator.ar(in3, rate, bits);
+		sig4 = Decimator.ar(in4, rate, bits);
+		sig5 = Decimator.ar(in5, rate, bits);
+		sig6 = Decimator.ar(in6, rate, bits);
+		sig7 = Decimator.ar(in7, rate, bits);
+		sig8 = Decimator.ar(in8, rate, bits);
+		sig9 = Decimator.ar(in9, rate, bits);
 
-		//////  2) Make a triggered timer
-		////////  nodes 3200-
-		////////  group 2005
-		//////// control busses 3000-
-		s.sendMsg(\s_new, \triggeredtimer, 3200+ix, 0, 2005, \clkibs, 110+ix, \trigphasebus0, 100, \obs0, 3000, \durphase, durphase);
-
-		////// 3) Create an fx
-		//////// nodes 3300-
-		//////// group 2006
-
-		switch( fxnum,
-			0, { //greyhole
-				s.sendMsg(\s_new, \greyhole, 3300+ix, 0, 2006, \ibs0, 200, \gateibs0, 3000);
-			}
-		); //end switch fxnum
-
-		////// 4) Create Animated Graphic in Processing
-		// int ix, float rad, float dur, String sclr, int wt
-
-		~proc.sendMsg( "/mktimetrig", ix, 0.5, durphase, "goldenrod", 15);
-
-
-	}, "/mkfx");
+		Out.ar(obs, sig0*env0*amp);
+		Out.ar(obs, sig1*env1*amp);
+		Out.ar(obs, sig2*env2*amp);
+		Out.ar(obs, sig3*env3*amp);
+		Out.ar(obs, sig4*env4*amp);
+		Out.ar(obs, sig5*env5*amp);
+		Out.ar(obs, sig6*env6*amp);
+		Out.ar(obs, sig7*env7*amp);
+		Out.ar(obs, sig8*env8*amp);
+		Out.ar(obs, sig9*env9*amp);
+	}).add;
 
 
 	////SOUNDS SYNTH DEFS
@@ -892,16 +970,10 @@ s.waitForBoot{ fork{
 ~sclang.sendMsg("/mkwand", 4, 99);
 ~sclang.sendMsg("/mkwand", 5, 177);
 
-s.sendMsg(\s_new, \phasorclock, 3001, 0, 2001, \abus, 101, \kbus, 1, \bpc, 16, \stbpm, 108, \endbpm, 108, \rampdur, 0.01, \t_tr, 1);
-s.sendMsg(\n_set, 3001, \stbpm, 97, \endbpm, 230, \rampdur, 23, \dir, -1);
 
 
-var ix = msg[1].asInteger;
-var bpm = msg[2].asFloat;
-var durphase = msg[3].asFloat;
-var fxnum = msg[4].asInteger;
-
-~sclang.sendMsg("/mkfx", 0, 100.0, 0.5, 0);
+~sclang.sendMsg("/mkfx", 0, 100.0, 0.5, 1);
+~sclang.sendMsg("/mkfx", 1, 120.0, 0.5, 0);
 
 ~sclang.sendMsg("/mktr", 0, 0, 0, 24.0);
 ~sclang.sendMsg("/mktr", 1, 0, 1, 52.0);
