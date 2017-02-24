@@ -17,6 +17,8 @@ s.waitForBoot{ fork{
 	//////////////////////////////////////////////////////
 
 	////// Index numbers so each sound trigger has its own unique node
+	var trigix = 0;
+
 	var toypianotrix = 0;
 	var puffdaddyix = 0;
 	var janusix = 0;
@@ -115,8 +117,8 @@ s.waitForBoot{ fork{
 
 	0.1.wait;
 
+	//Create Initial Wand
 	~sclang.sendMsg("/mkwand", 0, 60.0);
-
 
 	////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////
@@ -124,13 +126,10 @@ s.waitForBoot{ fork{
 	////////////////////////////////////////////////////////////////////////////
 
 
-	////////////////////////////////////////////////////
-	////Mechanism to create timed triggers /////////////
-	////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////
+	////Mechanism to create timed triggers /////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////
 	//////This OSCdef receives a command to create a trigger
-	//////The spec is clock time (0-60.0) as this is a familiar
-	//////metaphor to most folks
-	//////In SC we'll use nodes 10000 - 20000, maybe a dict later
 
 	OSCdef( \mktr, {
 		//// Msg args:
@@ -139,12 +138,13 @@ s.waitForBoot{ fork{
 		////// 3: sound number
 		////// 4: phase in clocktime minutes
 		arg msg;
-		var ix = msg[1].asInteger; //index of the trigger
-		var trk = msg[2].asInteger; //0-7 alla bullseye 0=master track
-		var sndix = msg[3].asInteger; //which sound, probably by color
-		var clktime = msg[4].asFloat;
-		var phase = clktime.linlin(0.0, 60.0, 0.0, 1.0);
-		var soundcolor = [ "limegreen", "purple", "goldenrod", "dodgerblue", "seagreen",  ];
+		//var ix = msg[1].asInteger; //index of the trigger
+		var ix = trigix;
+		var sndix = msg[1].asInteger; //which sound, probably by color
+		var phase = rrand(0.0, 1.0);
+		var soundcolor = [ "limegreen", "purple", "goldenrod", "dodgerblue", "seagreen"  ];
+
+		trigix = trigix + 1;
 
 		fork{
 			// 1) Create a phasectl for trigger's phase
@@ -168,6 +168,17 @@ s.waitForBoot{ fork{
 		}; //end fork
 
 	}, "/mktr"); //end OSCdef \mktr
+
+
+	//OSCdef to move sound targets
+	OSCdef(\mvsndtr, {
+		arg msg;
+		var ix = msg[1].asInteger;
+		var lo = msg[2].asFloat;
+		var hi = msg[3].asFloat;
+		var rampdur = msg[4].asFloat;
+		s.sendMsg(\n_set, 5000+ix, \lo, lo, \hi, hi, \dur, rampdur);
+	}, "/mvsndtr");
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -252,8 +263,6 @@ s.waitForBoot{ fork{
 		{wandphase>=7 && wandphase<8}{wandnum=7; trigphase = wandphase-7.0}
 		{wandphase>=8 && wandphase<9}{wandnum=8; trigphase = wandphase-8.0};
 
-		msg.postln;
-		wandnum.post; "-".post; trigphase.postln;
 		//map trigphase to 0-2 to feed to PanA
 		trigphase = trigphase.linlin(0.0,1.0,0.0,2.0);
 
@@ -548,7 +557,7 @@ s.waitForBoot{ fork{
 		var in9 = In.ar(ibs[9]);
 
 		//gate signals from individual targets/wands
-		var gate0 = In.kr(gateibs[0]).poll;
+		var gate0 = In.kr(gateibs[0]);
 		var gate1 = In.kr(gateibs[1]);
 		var gate2 = In.kr(gateibs[2]);
 		var gate3 = In.kr(gateibs[3]);
@@ -972,8 +981,8 @@ s.waitForBoot{ fork{
 
 
 
-~sclang.sendMsg("/mkfx", 0, 100.0, 0.5, 1);
-~sclang.sendMsg("/mkfx", 1, 120.0, 0.5, 0);
+~sclang.sendMsg("/mkfx", 0, 100.0, 0.5, 0);
+~sclang.sendMsg("/mkfx", 1, 120.0, 0.5, 1);
 
 ~sclang.sendMsg("/mktr", 0, 0, 0, 24.0);
 ~sclang.sendMsg("/mktr", 1, 0, 1, 52.0);
@@ -1052,6 +1061,10 @@ s.sendMsg(\n_set, 5004, \lo, 0.4, \hi, 0.9, \dur, 5);
 
 s.queryAllNodes
 s.meter;
+
+
+Do all by code osc message
+
 
 
 

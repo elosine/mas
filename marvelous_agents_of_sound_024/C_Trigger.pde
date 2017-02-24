@@ -82,9 +82,10 @@ class TriggerSet {
 
   // Draw Set Method //
   void drw() {
-    for (Trigger inst : cset) {
+    for(int i=cset.size()-1;i>=0;i--){
+      Trigger inst = cset.get(i);
       inst.drw();
-    }
+    } //end for
   }//end drw method
 
   // Draw Set Method //
