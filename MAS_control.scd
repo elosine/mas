@@ -61,6 +61,16 @@
 // WAND SPEED - /mkwand       ///
 /////////////////////////////////////
 
+OSCdef(\chgwand, {
+		arg msg;
+		var ix = msg[1].asInteger;
+		var newbpm = msg[2].asFloat;
+		var rampdur = msg[3].asFloat;
+		var dir = msg[4].asInteger;
+
+// 0) Wand 00 - Yellow
+~sclang.sendMsg("/mkwand", 1, 128.0);
+
 // 1) Wand 01 - Turquoiseblue
 ~sclang.sendMsg("/mkwand", 1, 128.0);
 

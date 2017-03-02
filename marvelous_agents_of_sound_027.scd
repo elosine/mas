@@ -5,6 +5,8 @@
 //Adjust Server Options before boot
 s.options.numAudioBusChannels = 3000;
 s.options.memSize = 163840;
+s.options.numOutputBusChannels = 8;
+s.options.numWireBufs = 1024;
 
 //// Start Server & Routine
 /////////////////////////////////////////////////////////////////////////////////
@@ -108,7 +110,7 @@ s.waitForBoot{ fork{
 		wandcurrbpm[ix] = bpm;
 
 		// 2) Create a patch synth per wand to go from private bus 200+ to 0
-		s.sendMsg(\s_new, \patch, 3990+ix, 0, 2010, \ibs, 200+ix, \obs, 0);
+		8.do{ |ixx| s.sendMsg(\s_new, \patch, 63990+(10*ix)+ixx, 0, 2010, \ibs, 200+(ix*10)+ixx, \obs, 0+ixx);};
 
 		// 3) Create animation in Processing
 		// int ix, int clkix, float rad1, float rad2, String clr, int wt
@@ -298,31 +300,31 @@ s.waitForBoot{ fork{
 				switch(mode,
 
 					0, { //single pitch
-						s.sendMsg(\s_new, \toypiano, 10000+(toypianotrix*10)+trignum, 0, 2004, \t_tr, 1, \pitch, pitch, \lfospd, 0.3, \pos, trigphase, \obs, 200+wandnum );
+						s.sendMsg(\s_new, \toypiano, 10000+(toypianotrix*10)+trignum, 0, 2004, \t_tr, 1, \pitch, pitch, \lfospd, 0.3, \pos, trigphase, \obs, 200+(wandnum*10) );
 						toypianotrix=toypianotrix+1;
 					}, //end case 0-singlepitch
 
 					1, { //m3
-						s.sendMsg(\s_new, \toypiano, 12000+(toypianotrix*10)+trignum, 0, 2004, \t_tr, 1, \pitch, pitch, \lfospd, 0.3, \pos, trigphase, \obs, 200+wandnum );
-						s.sendMsg(\s_new, \toypiano, 11000+(toypianotrix*10)+trignum, 0, 2004, \t_tr, 1, \pitch, pitch+3, \lfospd, 0.44, \pos, trigphase, \obs, 200+wandnum );
+						s.sendMsg(\s_new, \toypiano, 12000+(toypianotrix*10)+trignum, 0, 2004, \t_tr, 1, \pitch, pitch, \lfospd, 0.3, \pos, trigphase, \obs, 200+(wandnum*10) );
+						s.sendMsg(\s_new, \toypiano, 11000+(toypianotrix*10)+trignum, 0, 2004, \t_tr, 1, \pitch, pitch+3, \lfospd, 0.44, \pos, trigphase, \obs, 200+(wandnum*10) );
 						toypianotrix=toypianotrix+1;
 					}, //end case 1-m3
 
 					2, { //P4
-						s.sendMsg(\s_new, \toypiano, 14000+(toypianotrix*10)+trignum, 0, 2004, \t_tr, 1, \pitch, pitch, \lfospd, 0.3, \pos, trigphase, \obs, 200+wandnum );
-						s.sendMsg(\s_new, \toypiano, 13000+(toypianotrix*10)+trignum, 0, 2004, \t_tr, 1, \pitch, pitch+5, \lfospd, 0.52, \pos, trigphase, \obs, 200+wandnum );
+						s.sendMsg(\s_new, \toypiano, 14000+(toypianotrix*10)+trignum, 0, 2004, \t_tr, 1, \pitch, pitch, \lfospd, 0.3, \pos, trigphase, \obs, 200+(wandnum*10) );
+						s.sendMsg(\s_new, \toypiano, 13000+(toypianotrix*10)+trignum, 0, 2004, \t_tr, 1, \pitch, pitch+5, \lfospd, 0.52, \pos, trigphase, \obs, 200+(wandnum*10) );
 						toypianotrix=toypianotrix+1;
 					}, //end case 2-P4
 
 					3, { //M7
-						s.sendMsg(\s_new, \toypiano, 16000+(toypianotrix*10)+trignum, 0, 2004, \t_tr, 1, \pitch, pitch, \lfospd, 0.3, \pos, trigphase, \obs, 200+wandnum );
-						s.sendMsg(\s_new, \toypiano, 15000+(toypianotrix*10)+trignum, 0, 2004, \t_tr, 1, \pitch, pitch+11, \lfospd, 0.61, \pos, trigphase, \obs, 200+wandnum );
+						s.sendMsg(\s_new, \toypiano, 16000+(toypianotrix*10)+trignum, 0, 2004, \t_tr, 1, \pitch, pitch, \lfospd, 0.3, \pos, trigphase, \obs, 200+(wandnum*10) );
+						s.sendMsg(\s_new, \toypiano, 15000+(toypianotrix*10)+trignum, 0, 2004, \t_tr, 1, \pitch, pitch+11, \lfospd, 0.61, \pos, trigphase, \obs, 200+(wandnum*10) );
 						toypianotrix=toypianotrix+1;
 					}, //end case 3-M7
 
 					4, { //m2
-						s.sendMsg(\s_new, \toypiano, 18000+(toypianotrix*10)+trignum, 0, 2004, \t_tr, 1, \pitch, pitch, \lfospd, 0.3, \pos, trigphase, \obs, 200+wandnum );
-						s.sendMsg(\s_new, \toypiano, 17000+(toypianotrix*10)+trignum, 0, 2004, \t_tr, 1, \pitch, pitch+1, \lfospd, 0.27, \pos, trigphase, \obs, 200+wandnum );
+						s.sendMsg(\s_new, \toypiano, 18000+(toypianotrix*10)+trignum, 0, 2004, \t_tr, 1, \pitch, pitch, \lfospd, 0.3, \pos, trigphase, \obs, 200+(wandnum*10) );
+						s.sendMsg(\s_new, \toypiano, 17000+(toypianotrix*10)+trignum, 0, 2004, \t_tr, 1, \pitch, pitch+1, \lfospd, 0.27, \pos, trigphase, \obs, 200+(wandnum*10) );
 						toypianotrix=toypianotrix+1;
 					}, //end case 4-m2
 
@@ -331,29 +333,29 @@ s.waitForBoot{ fork{
 			}, //end case 0 toy piano
 
 			1, { //PUFFDADDY
-				s.sendMsg(\s_new, \puffdaddy, 200000+(trignum*1000)+puffdaddyix, 0, 2004, \t_tr, 1, \pos, trigphase, \obs, 200+wandnum );
+				s.sendMsg(\s_new, \puffdaddy, 200000+(trignum*1000)+puffdaddyix, 0, 2004, \t_tr, 1, \pos, trigphase, \obs, 200+(wandnum*10) );
 				puffdaddyix=puffdaddyix+1;
 			}, //end case 1 puffdaddy
 
 			2, {  //JANUS
-				s.sendMsg(\s_new, \janus, 300000+(trignum*1000)+janusix, 0, 2004, \t_tr, 1, \pos, trigphase, \obs, 200+wandnum );
+				s.sendMsg(\s_new, \janus, 300000+(trignum*1000)+janusix, 0, 2004, \t_tr, 1, \pos, trigphase, \obs, 200+(wandnum*10) );
 				janusix=janusix+1;
 			}, //end case 2 janus
 
 			3, { //STOCHSYNTH
-				s.sendMsg(\s_new, \stochsynth, 400000+(trignum*1000)+stochsynthix, 0, 2004, \t_tr, 1, \pos, trigphase, \obs, 200+wandnum );
+				s.sendMsg(\s_new, \stochsynth, 400000+(trignum*1000)+stochsynthix, 0, 2004, \t_tr, 1, \pos, trigphase, \obs, 200+(wandnum*10) );
 				janusix=janusix+1;
 			}, //end case 3 stochsynth
 
 			4, { //KRUNKD
 				~krunkdfreq = rrand(30, 88); ~krunkddur = rrand(0.85, 2.3);
-				s.sendMsg(\s_new, \krunkd, 500000+(trignum*1000)+krunkdix, 0, 2004, \f1, ~krunkdfreq.midicps, \f2, (~krunkdfreq+1).midicps, \decay, ~krunkddur, \rel, ~krunkddur, \amp, 0.85,\t_tr, 1, \pos, trigphase, \obs, 200+wandnum );
+				s.sendMsg(\s_new, \krunkd, 500000+(trignum*1000)+krunkdix, 0, 2004, \f1, ~krunkdfreq.midicps, \f2, (~krunkdfreq+1).midicps, \decay, ~krunkddur, \rel, ~krunkddur, \amp, 0.85,\t_tr, 1, \pos, trigphase, \obs, 200+(wandnum*10) );
 				krunkdix=krunkdix+1;
 			}, //end case 4 krunkd
 
 			5, { //TBONE
 				~tbonepitch = rrand(30, 50); ~tboneddur = rrand(0.15, 0.5);
-				s.sendMsg(\s_new, \tbone, 600000+(trignum*1000)+tboneix, 0, 2004, \pitch, ~tbonepitch, \dur, ~tboneddur, \t_tr, 1, \pos, trigphase, \obs, 200+wandnum );
+				s.sendMsg(\s_new, \tbone, 600000+(trignum*1000)+tboneix, 0, 2004, \pitch, ~tbonepitch, \dur, ~tboneddur, \t_tr, 1, \pos, trigphase, \obs, 200+(wandnum*10) );
 				tboneix=tboneix+1;
 			}, //end case 5 tbone
 
@@ -501,7 +503,7 @@ s.waitForBoot{ fork{
 		switch( fxnum,
 
 			0, { //greyhole
-				s.sendMsg(\s_new, \greyhole, 3300+ix, 0, 2006, \ibs0, 200, \gateibs0, 3000);
+				s.sendMsg(\s_new, \greyhole, 3300+ix, 0, 2006, \ibs0, 200, \gateibs0, 3000, \clkibs, 10+ix, \durphase, durphase);
 			},
 
 			1, { //decimate
@@ -519,17 +521,18 @@ s.waitForBoot{ fork{
 
 
 	SynthDef(\greyhole, {
-		arg ibs0, obs=0, gateibs0;
+		arg ibs0, obs=0, gateibs0, clkibs, durphase;
 
-		var ibs = Array.fill(10, {|ix| ibs0+ix});
+		var ibs = Array.fill(5, {|ix| Array.fill(8,{|ixx| ibs0+(10*ix)+ixx}) });
+
 		var gateibs = Array.fill(10, {|ix| gateibs0+ix});
 
 
-		var in0 = In.ar(ibs[0]);
-		var in1 = In.ar(ibs[1]);
-		var in2 = In.ar(ibs[2]);
-		var in3 = In.ar(ibs[3]);
-		var in4 = In.ar(ibs[4]);
+		var in0 = In.ar(ibs[0],8);
+		var in1 = In.ar(ibs[1],8);
+		var in2 = In.ar(ibs[2],8);
+		var in3 = In.ar(ibs[3],8);
+		var in4 = In.ar(ibs[4],8);
 
 		var fx0 = Greyhole.ar(in0, LFTri.kr(0.01).range(0.1, 3.0), LFSaw.kr(0.1).range(0.0, 1.0), LFTri.kr(0.05).range(0.5, 2.5), SinOsc.kr(0.08).range(0.01, 1.0), LFTri.kr(0.005).range(0.1, 1.0));
 		var fx1 = Greyhole.ar(in1, LFTri.kr(0.01).range(0.1, 3.0), LFSaw.kr(0.1).range(0.0, 1.0), LFTri.kr(0.05).range(0.5, 2.5), SinOsc.kr(0.08).range(0.01, 1.0), LFTri.kr(0.005).range(0.1, 1.0));
@@ -548,6 +551,10 @@ s.waitForBoot{ fork{
 		var env2 = EnvGen.ar(Env.asr(1.25,1,1.25,0),gate2);
 		var env3 = EnvGen.ar(Env.asr(1.25,1,1.25,0),gate3);
 		var env4 = EnvGen.ar(Env.asr(1.25,1,1.25,0),gate4);
+
+	//	var pos = (In.kr(clkibs)+(durphase/2.0)).linlin(0.0, 1.0, 0.0, 2.0);
+
+		//fx0 = PanAz.ar(8, fx0, pos);
 
 		Out.ar(obs, fx0*env0);
 		Out.ar(obs, fx1*env1);
@@ -702,6 +709,9 @@ s.waitForBoot{ fork{
 		//sig = PanAz.ar(8, sig, SinOsc.kr(0.03), 1, wd, 0.5);
 		//sig = PanAz.ar(8, Mix.ar([sig, JPverb.ar(hp, rt, dp)*0.33]), SinOsc.kr(0.03), 1, wd, 0.5);
 		//sig = Mix.ar([sig, hp*0.02]);
+
+		sig = PanAz.ar(8, sig, pos, 1, 2, 0.5);
+
 		Out.ar(obs, sig*amp*env);
 	}).add;
 
@@ -752,14 +762,14 @@ s.waitForBoot{ fork{
 				]
 			],
 			imp);
-		//sig = PanAz.ar(8, sig, pos, 1, 2, 0.5);
+		sig = PanAz.ar(8, sig, pos, 1, 2, 0.5);
 		Out.ar(obs, sig*amp*env);
 	}).add;
 
 	////JANUS
 
 	SynthDef( \janus, {
-		arg obs=0, t_tr=0, amp=0.5;
+		arg obs=0, t_tr=0, amp=0.5, pos;
 		var imp = T2A.ar(t_tr);
 		var o1 = SinOsc.kr(0.311).range(0.0, 0.25);
 		var o2 = SinOsc.kr(0.07).range(0.0, 0.25);
@@ -790,18 +800,23 @@ s.waitForBoot{ fork{
 		var s2b = Ringz.ar( imp, f2b, dur,[o3, o5, o4, o2]);
 		var f3b = (p3+1).midicps;
 		var s3b = Ringz.ar( imp, f3b, dur,[o2, o1, o5, o3]);
+		var sig;
 		s1 = Mix.ar(s1);
 		s2 = Mix.ar(s2);
 		s3 = Mix.ar(s3);
+
+		sig = PanAz.ar(8, (Mix.ar([s1*0.3, s2*0.3, s3*0.3])*fe), pos, 1, 2, 0.5);
+
+
 		//Out.ar(och, Mix.ar([s1*(1.0/6.0), s2*(1.0/6.0), s3*(1.0/6.0), s1b*(1.0/6.0), s2b*(1.0/6.0), s3b*(1.0/6.0)])*fe);
-		Out.ar(obs, (Mix.ar([s1*0.3, s2*0.3, s3*0.3])*fe) * amp);
+		Out.ar(obs, sig * amp);
 		//Out.ar(0, Mix.ar([s1*(1.0/6.0), s1b*(1.0/6.0)])*fe);
 	}).add;
 
 	//////STOCHSYNTH
 
 	SynthDef(\stochsynth, {
-		arg obs=0,ampdist = 4.5, durdist = 1.5, adparam = 1, ddparam = 1, minfreq = 50, maxfreq = 6580, ampscale = 1.0, durscale = 0.5, initCPs = 12, knum, mul = 0.5, add = 0, envdur = 2, envdens = 7, atk=0.001, amp = 4.1, rel = 0.5;
+		arg obs=0,ampdist = 4.5, durdist = 1.5, adparam = 1, ddparam = 1, minfreq = 50, maxfreq = 6580, ampscale = 1.0, durscale = 0.5, initCPs = 12, knum, mul = 0.5, add = 0, envdur = 2, envdens = 7, atk=0.001, amp = 4.1, rel = 0.5, pos;
 		//'one-slider' variables
 		//var dur = \dur.kr(0.0).linexp(0.0, 1.0, 0.02, 3.02);
 		//var dens = \dens.kr(0.0).linlin(0.0, 1.0, 37.0, 9.02);
@@ -827,14 +842,18 @@ s.waitForBoot{ fork{
 		var mix = Mix.ar([gd, ring*0.01]);
 		var rmod = SinOsc.ar(SinOsc.kr(0.03, 0, 400, 600));
 		var pan = Pan2.ar([moog, DelayC.ar(moog, delaytime:0.008)], SinOsc.kr(TIRand.kr(0.5, 2.5,Dust.kr(1.0) )));//spatialize
-		Out.ar(obs, moog*ampenv*amp);
+		var sig;
+
+		sig = PanAz.ar(8, moog, pos, 1, 2, 0.5);
+
+		Out.ar(obs, sig*ampenv*amp);
 	}).add;
 
 	//////DRUMLINE
 
 	SynthDef(\drumline, {
-		arg rate1=11.0, rate2=10.0, rate3=12.0, gdur=0.03, ffreq=5000, frez=0.5, fr1=300, fr2=12000, amp=1.5, gate=0, dur=0.01, crv=0, pan=0;
-		var noise, grainrate1, grainrate2, grainrate3, grainenv1, grainenv2, grainenv3, filterednoise1, filterednoise2, filterednoise3, freqchgrate1, freqchgrate2, freqchgrate3, s1, s2, s3, output, oenv, envtrig, atk;
+		arg rate1=11.0, rate2=10.0, rate3=12.0, gdur=0.03, ffreq=5000, frez=0.5, fr1=300, fr2=12000, amp=1.5, gate=0, dur=0.01, crv=0, pan=0, pos;
+		var noise, grainrate1, grainrate2, grainrate3, grainenv1, grainenv2, grainenv3, filterednoise1, filterednoise2, filterednoise3, freqchgrate1, freqchgrate2, freqchgrate3, s1, s2, s3, output, oenv, envtrig, atk, sig;
 		atk = PinkNoise.ar()*EnvGen.ar(Env.perc(attackTime:0.005, releaseTime:0.01));
 		envtrig = \t_tr.kr(0,0);
 		oenv = EnvGen.ar( Env.perc(attackTime:0.005, releaseTime:dur, curve:crv), envtrig, doneAction:2);
@@ -856,14 +875,17 @@ s.waitForBoot{ fork{
 		s3 = filterednoise3*grainenv3;
 		output = Mix.ar( [s1, s2, s3, atk] );
 		//output = Pan2.ar(output, pan);
-		Out.ar(0, output*amp*oenv);
+
+		sig = PanAz.ar(8, output, pos, 1, 2, 0.5);
+
+		Out.ar(0, sig*amp*oenv);
 	}).add;
 
 	//////KRUNKD
 
 	SynthDef(\krunkd, {
-		arg obs=0, rate=0.7, res=9.8, igain=0.01, type=0, nl=0.33, f1=200, f2=210, decay=0.9, amp=0.5, rq=0.006, atk=0.001, rel=0.5, crv = -4, pan=0;
-		var filter, impulse, ftrig, filter2, output, f1b, f2b, freq, oenv;
+		arg obs=0, rate=0.7, res=9.8, igain=0.01, type=0, nl=0.33, f1=200, f2=210, decay=0.9, amp=0.5, rq=0.006, atk=0.001, rel=0.5, crv = -4, pan=0, pos;
+		var filter, impulse, ftrig, filter2, output, f1b, f2b, freq, oenv,sig;
 		oenv = EnvGen.ar(Env.perc(atk, rel, crv), \t_tr.kr(0, 0.0001), doneAction:2);
 		f1b = (f1.cpsmidi-1).midicps;
 		f2b = (f2.cpsmidi-1).midicps;
@@ -876,13 +898,15 @@ s.waitForBoot{ fork{
 		output = Decay2.ar(output, 0.001, decay, output);
 		output = output*0.02;
 		//output = Pan2.ar(output, pan);
-		Out.ar(obs, output*amp*oenv);
+		sig = PanAz.ar(8, output, pos, 1, 2, 0.5);
+
+		Out.ar(obs, sig*amp*oenv);
 	}).add;
 
 	//////TBONE
 
 	SynthDef( \tbone, {
-		arg obs=0, pitch=60, amp=0.87, dur=3, t_tr=1, ffreq1=500, ffreq2=5000, q1=0.1, q2=0.7, sigamp=0.85, filtersigamp=0.3, fatk=0.3, fsus=0.3, frel=0.4, mq=0.7, mflo=500, mfhi=10000, t60=1, damp=0.5, sz=1;
+		arg obs=0, pitch=60, amp=0.87, dur=3, t_tr=1, ffreq1=500, ffreq2=5000, q1=0.1, q2=0.7, sigamp=0.85, filtersigamp=0.3, fatk=0.3, fsus=0.3, frel=0.4, mq=0.7, mflo=500, mfhi=10000, t60=1, damp=0.5, sz=1, pos;
 		var freq = pitch.midicps;
 		var osc1, osc2, osc3, osc4;
 		var sig, filtersig, sig1, sig2, env, fenv;
@@ -902,6 +926,9 @@ s.waitForBoot{ fork{
 		sig = RLPF.ar(sig, fenv, mq);
 		sig = JPverb.ar(sig,10,0,0.3);
 		sig = Mix.ar(sig*0.5);
+
+		sig = PanAz.ar(8, sig, pos, 1, 2, 0.5);
+
 		Out.ar(obs,sig*amp*env);
 	}).add;
 
